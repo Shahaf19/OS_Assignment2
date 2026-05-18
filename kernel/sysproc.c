@@ -6,6 +6,7 @@
 #include "spinlock.h"
 #include "proc.h"
 
+
 uint64
 sys_exit(void)
 {
@@ -88,4 +89,19 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64
+sys_lcg_srand(void)
+{
+  int seed;
+  argint(0, &seed);
+  lcg_srand(seed);
+  return 0;
+}
+
+uint64
+sys_lcg_rand(void)
+{
+  return lcg_rand(); 
 }

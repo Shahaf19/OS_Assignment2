@@ -5,6 +5,8 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
+uint ticks_state = 1;
+struct spinlock ticks_lock;
 
 struct cpu cpus[NCPU];
 
@@ -51,6 +53,7 @@ procinit(void)
   
   initlock(&pid_lock, "nextpid");
   initlock(&wait_lock, "wait_lock");
+  initlock(&ticks_lock, "ticks_lock");
   for(p = proc; p < &proc[NPROC]; p++) {
       initlock(&p->lock, "proc");
       p->state = UNUSED;
@@ -680,4 +683,21 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+
+void lcg_srand(uint seed){
+  acquire(&ticks_lock);
+  ticks_state = seed;
+  release(&ticks_lock);
+}
+
+uint lcg_rand(void){
+  uint res;
+  acquire(&ticks_lock);
+  // a=1664525, b=1013904223 % m=2^32 - makes sure it happens automaticly (uint)
+  ticks_state = (1664525 * ticks_state + 1013904223);
+  res = ticks_state;
+  release(&ticks_lock);
+  return res;
 }
