@@ -120,3 +120,35 @@ sys_getgid(void)
 {
   return myproc()->gid;
 }
+
+uint64
+sys_israeli_create(void)
+{
+  int favoritism;
+  argint(0, &favoritism);
+  return israeli_create(favoritism);
+}
+
+uint64
+sys_israeli_acquire(void)
+{
+  int id;
+  argint(0, &id);
+  return israeli_acquire(id);
+}
+
+uint64
+sys_israeli_release(void)
+{
+  int id;
+  argint(0, &id);
+  return israeli_release(id);
+}
+
+uint64
+sys_israeli_destroy(void)
+{
+  int id;
+  argint(0, &id);
+  return israeli_destroy(id);
+}
