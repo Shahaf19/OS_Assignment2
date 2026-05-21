@@ -29,6 +29,7 @@ main()
     fileinit();      // file table
     virtio_disk_init(); // emulated hard disk
     israeli_init();  // Israeli lock table
+    score_init();    // team score table (Task 2)
     userinit();      // first user process
     __sync_synchronize();
     started = 1;

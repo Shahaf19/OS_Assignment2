@@ -116,6 +116,12 @@ int             israeli_acquire(int);
 int             israeli_release(int);
 int             israeli_destroy(int);
 
+// score.c
+void            score_init(void);
+int             score_reset(void);
+int             score_inc(int);
+int             score_get(int);
+
 // swtch.S
 void            swtch(struct context*, struct context*);
 
