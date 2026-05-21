@@ -103,5 +103,20 @@ sys_lcg_srand(void)
 uint64
 sys_lcg_rand(void)
 {
-  return lcg_rand(); 
+  return lcg_rand();
+}
+
+uint64
+sys_setgid(void)
+{
+  int gid;
+  argint(0, &gid);
+  myproc()->gid = gid;
+  return 0;
+}
+
+uint64
+sys_getgid(void)
+{
+  return myproc()->gid;
 }

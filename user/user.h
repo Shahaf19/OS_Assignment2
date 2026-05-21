@@ -24,6 +24,8 @@ int sleep(int);
 int uptime(void);
 int lcg_srand(uint);
 uint lcg_rand(void);
+int setgid(int);
+int getgid(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
