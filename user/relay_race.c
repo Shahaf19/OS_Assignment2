@@ -1,10 +1,15 @@
+// Task 2 — Relay Race Tournament.
+// Submitted with favoritism = 0; also tested with c = 50 and c = 100.
+// Pass a different value as argv[1] (e.g. `relay_race 100`) to override.
+
 #include "kernel/types.h"
 #include "kernel/stat.h"
 #include "user/user.h"
 
-#define NTEAMS  3
-#define RUNNERS 5
-#define TARGET  30
+#define NTEAMS   3
+#define RUNNERS  5
+#define NRUNNERS (NTEAMS * RUNNERS)
+#define TARGET   30
 
 static int
 race_over(void)
@@ -36,10 +41,27 @@ run_relay(int lock_id, int team)
   }
 }
 
+// Build a balanced gid list — each team appears exactly RUNNERS times —
+// then Fisher-Yates shuffle it. This keeps team sizes equal while
+// randomizing fork order so no team has a built-in head start.
+static void
+shuffled_gids(int *gids)
+{
+  for(int i = 0; i < NRUNNERS; i++)
+    gids[i] = i / RUNNERS;
+
+  for(int i = NRUNNERS - 1; i > 0; i--){
+    int j = lcg_rand() % (i + 1);
+    int tmp = gids[i];
+    gids[i] = gids[j];
+    gids[j] = tmp;
+  }
+}
+
 int
 main(int argc, char *argv[])
 {
-  int favoritism = 50;
+  int favoritism = 0;
   if(argc >= 2)
     favoritism = atoi(argv[1]);
 
@@ -50,25 +72,29 @@ main(int argc, char *argv[])
   }
   score_reset();
 
-  printf("Relay race starting: %d teams x %d runners, target %d, favoritism %d\n",
+  // Seed with uptime so different runs produce different shuffles.
+  lcg_srand(uptime() ^ getpid());
+
+  int gids[NRUNNERS];
+  shuffled_gids(gids);
+
+  printf("Relay race: %d teams x %d runners, target %d, favoritism %d\n",
          NTEAMS, RUNNERS, TARGET, favoritism);
 
-  for(int team = 0; team < NTEAMS; team++){
-    for(int r = 0; r < RUNNERS; r++){
-      int pid = fork();
-      if(pid < 0){
-        printf("fork failed\n");
-        exit(1);
-      }
-      if(pid == 0){
-        setgid(team);
-        run_relay(lock_id, team);
-        // not reached
-      }
+  for(int i = 0; i < NRUNNERS; i++){
+    int pid = fork();
+    if(pid < 0){
+      printf("fork failed\n");
+      exit(1);
+    }
+    if(pid == 0){
+      setgid(gids[i]);
+      run_relay(lock_id, gids[i]);
+      // not reached
     }
   }
 
-  for(int i = 0; i < NTEAMS * RUNNERS; i++)
+  for(int i = 0; i < NRUNNERS; i++)
     wait(0);
 
   printf("\nFinal scores:\n");
